@@ -1,0 +1,22 @@
+#Instructions
+
+[instructions]
+u"""Din uppgift  \u00E4r att  avg\u00F6ra om siffran som presenteras p\u00E5 sk\u00E4rmen
+\u00E4r udda eller j\u00E4mna.\n
+Ignorera eventuella distraktorer (ljud eller vibrationer).
+Du ska svara s\u00E5 fort du kan men s\u00E5 t\u00E4tt du kan
+Tryck p\u00E5 en tangent for att g\u00E4 vidare."""
+
+[instructions2] 
+u"""Tryck p\u00E5 %s om siffran  \u00E4r udda
+Tryck p\u00E5 %s om siffran  \u00E4r j\u00E4mn
+T\u00E4nk  p\u00E5 att trycka s\u00E5 snabbt och r\u00E4tt du kan.
+
+Tryck p\u00E5 en tangent for att starta"""  % (rkeys['Odd'], rkeys['Even'])
+[END]
+
+
+[paustxt]
+u"""Du kan nu ta en kort paus \n
+Tryck p\u00E5 en tangent for att starta""
+[END] 
