@@ -114,8 +114,7 @@ trialClock.reset()
 #First a square design is done with the function. We have 3 conditions (cCount = 3!)
 squares= lsquare(cCount=3) 
 
-#Determining the order. Need to pass the square design, num of Partcipants and the current participant number
-#Returns a list with 0,1,2 (0=baseline, 1=steady state, 2=changing state)
+#Not sure if used?
 order = blockOrder(skv=squares, nParticipants=42, participant=int(expInfo['FP']))
 
 #Practice handling
