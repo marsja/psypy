@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from psychopy import visual, event, core, logging, sound, gui, data, parallel
+#Importing some functions to take care of latin square design, write data file, and so on... (See file trialhandling.py)
 from trialhandling import writeCsv, makeDir, lsquare, blockOrder, imStim
 import os, numpy, random
 
@@ -22,7 +23,6 @@ def handleKeys(key):
         last_state = True # Return true if down
         port.setData(0)
         core.wait(.15)
-#Data och fp vars
 
 # Store info about the experiment session
 expName = u'Cross-Modality Matching'   #
@@ -36,24 +36,34 @@ else: print 'User Cancelled'
 
 #Soundlevels to choose from...
 sndlvls = numpy.linspace(0.1, 1.0, 21)
-#De startnivÃ¥er. Den fÃ¶rsta listan randomiseras den andra tas baklÃ¤nges
+
+
+#List of sound levels to start from
 sint = [0.1, 1.0]
+
+#List of vibration intensities
 vlvl = [5,10,15]
-task = ['Attention', 'Attention', 'Attention', 'Intensity', 'Intensity', 'Intensity']#W
-snd = 'novel.wav' #fÃ¶r att kunna kÃ¶ra med andra ljud
-fpn = int(expInfo['FP'])#Varannan fp far starta med lagsta intensitet pa ljud
+#List of the tasks
+task = ['Attention', 'Attention', 'Attention', 'Intensity', 'Intensity', 'Intensity']
+#Sound
+snd = 'novel.wav'
+
+#Sub_id. 50 % start in the lower end of sound level..
+fpn = int(expInfo['FP'])
 trialClock = core.Clock()
-#Removed this one...
+
+#Counterbalancing which hand vibrations will start... 
 if fpn%2==0:
     sint.reverse()
     task.reverse()
 
+#Making data dir using my function
 makeDir('Data')
 makeDir('Data\\Subject_files')
 filename = u'Data\\Subject_files' + os.path.sep + u'Data_%s_%s' %(expInfo[u'FP'], expInfo[u'date'])
 datafile = u'Data' + os.path.sep + u'CM_-_Matching_sound_intensit_vs_vibration.csv'
 
-#Skapar fÃ¶nstret fÃ¶r experimentet
+#Creates window for the experiment
 win = visual.Window(size=(1920, 1200), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
     monitor=u'testMonitor', color=[0,0,0], colorSpace=u'rgb',
     blendMode=u'avg',winType='pyglet')
@@ -63,7 +73,7 @@ expInfo[u'frameRate']=win.getActualFrameRate()
 port = parallel.ParallelPort(address=0x1120) #For output
 inp = parallel.ParallelPort(address=0x1121) #For input from handles, gulmarkerade = 63, svartmarkerade = 255
 
-#Instruktioner
+#Instructions
 instruk = u"""Uppgiften är att matcha ljudintensiteten (volymen) i ett ljud med intensiteten hos vibrationer. Detta kommer du göra 12 gånger
  för varje ljud- och vibrationskombination. 
 Du ska ställa in ljudets volym så att du upplever att ljudintensiteten  matchar vibrationens intensitet. \n\n
@@ -82,7 +92,7 @@ instruk2 = u'''Ställ in ljudet så att du upplever att det har samma intensitet
 Tryck på knappen på det vänstra handtaget för att sänka volymen, tryck på knappen på det högra handtaget för att höja volymen.\nTryck enter för att svara.'''
 txtOnScreen = txtStim(win, text='+', pos=[0.0,0.0], height= 0.05, name=u'Text Object on Screen')
 txtOntrial = txtStim(win, text=instruk2, pos=[0.0,0.3], height= 0.05, name=u'Trial')
-#FÃ¶r responsknapparna att styra ljud och vibrationer med
+
 myItem = visual.TextStim(win, text=None, pos=[0.0,0.8], name=u'Trial Text')
 #Practice image
 pracTarget =  imStim(win=win, image='image1.png', pos=[0.0,0.0], name='TargetPractice')
@@ -108,7 +118,7 @@ squares= lsquare(cCount=3)
 #Returns a list with 0,1,2 (0=baseline, 1=steady state, 2=changing state)
 order = blockOrder(skv=squares, nParticipants=42, participant=int(expInfo['FP']))
 
-#Practice 
+#Practice handling
 targ = 0
 stimList=[]
 pracTargets = ['image1.png','image2.png']
@@ -127,21 +137,30 @@ practice = data.TrialHandler(stimList,1, method="sequential")
 #Experiment trialhandling...
 stimList=[]
 expTrial = 0
+#Indices to be used in the following loop. Getting right sound levels...
 idx = [0,1,2,0,1,2]
 for i in range(0,6):
+    #Looping through 6 blocks
     block = i+1
+    #Each block containts 12 trials
     for trial in range(1,13):
         expTrial += 1
+        #Half of the trials will start from one end of the sound level...
         if trial <= 6:
+            #Creating a list containing dictionaries. Each dictionary is a trial. 
             stimList.append( 
                 {'Startlvl':sint[0], 'Trial':trial, 'Block':block,'Vib':vlvl[idx[i]], 'VibOrder':order, 'Task':task[i], 'ExpTrial':expTrial,
                 'Sub_id':fpn, 'Age':expInfo['Age'], 'Sex':expInfo['Sex']} )
+         #The other half start from the other end...
         else: 
             stimList.append( 
                 {'Startlvl':sint[1], 'Trial':trial, 'Block':block, 'Vib':vlvl[idx[i]],'VibOrder':order, 'Task':task[i], 'ExpTrial':expTrial,
                 'Sub_id':fpn, 'Age':expInfo['Age'], 'Sex':expInfo['Sex']} )
 
+
+#Using Trialhandler to create the object to be run as experiment later...
 trials = data.TrialHandler(stimList,1, method="sequential")
+#Adding stuff to that...
 trials.data.addDataType('Volume')
 trials.data.addDataType('Response')
 
@@ -159,19 +178,22 @@ txtOnScreen.draw()
 win.flip()
 last_state = False #Buttons not pressed
 
+#Just a clock to time stuff... 
 timingClock = core.Clock()
 for thisTrial in practice:
-    #Bestam vart den ska starta
+    #So where on the ratingScale used are the ticker gonna start?
     if  thisTrial['Startlvl'] == 0.1:
-        mStart = 0 # starta frÃ¥n lÃ¥g eller hÃ¶g
+        mStart = 0 #Low
     else:
-        mStart = 20
+        mStart = 20#High
+    #Creating sound object
     tada = sound.Sound(snd)
+    #Changing text to be on screen
     tx = u"St\u00E4ll in ljudintensitet: " + str(thisTrial['Trial']) 
+    #Setting the image stored in the dictionary thisTrial (which is in trials, created by trialhandler...)
     pracTarget.setImage(thisTrial['Visual'])
     myItem.setText(tx)
     txtOnScreen.setText(instruk2)
-    #Starta varje trial med att spela och vibrera
     for i in range(vibFrames):
         txtOnScreen.setText('+')
         txtOnScreen.draw()
@@ -223,7 +245,7 @@ for thisTrial in practice:
        txtOnScreen.draw()
        win.flip()
        event.clearEvents()
-#Instruktions text experiment
+#Instructions for experiment
 if task[0]=='Attention':instructions = ainstruk
 else: instructions = instruk
 notClicked = True
@@ -238,9 +260,9 @@ txtOnScreen.setText('+')
 txtOnScreen.draw()
 win.flip()
 
-#Startar experimentet
+#The test part of the experiment starts hear...
 for thisTrial in trials:
-    #Bestam vart den ska starta
+    #Where is it gonna be started (the ticker...)
     if  thisTrial['Startlvl'] == 0.1: mStart = random.randint(0,4) #Start in the lower end
     else: mStart = random.randint(17,21)#start in the higher end
     if  thisTrial['Task'] == 'Attention': scrinstruc = instruk1
@@ -251,7 +273,7 @@ for thisTrial in trials:
     vb = thisTrial['Vib']
     txtOntrial.setText(scrinstruc)
     myItem.setText(tx)
-    #Starta varje trial med att spela och vibrera
+    #Starting a trial...
     for i in range(vibFrames):
         txtOnScreen.setText('+')
         txtOnScreen.draw()
@@ -269,6 +291,7 @@ for thisTrial in trials:
     timingClock.reset()
 
     while myRatingScale.noResponse: # show & update until a response has been made
+        #Timing so that vibration will be approx 200 ms
         t = timingClock.getTime()
         for key in event.getKeys():
             if key in ['escape','q']:
@@ -282,35 +305,41 @@ for thisTrial in trials:
         if myRatingScale.getRating()==21: fv = sndlvls[20]
         else: fv = sndlvls[myRatingScale.getRating()]
 
-        if isinstance(fv, float): #Kan vara Ã¶verflÃ¶digt
+        if isinstance(fv, float): 
             tada.setVolume(fv)   
         else:
             tada.setVolume(fv)
-
+        #Well the timer will never be exact so when its here play sound and vibrate
         if t>=0.798 and t<=0.804:
             port.setData(vb)
             tada.setVolume(fv)
             tada.play()
+         #same as above but stop the vibration... gives an approx 200 ms vib...
         if t>=0.998 and t<=1.04:
              port.setData(0)
         if t>1.6:
+            #Yes reset the clock....
             timingClock.reset()
 
         win.flip()
             
         rating = myRatingScale.getRating() # get the value indicated by the subject, 'None' if skipped
     port.setData(0)
+    #Collect the responses from the rating scale... 
     thisTrial['Response'] = rating
+    #Which volume was played?
     thisTrial['Volym'] = fv    
+    #Save trial to row in csv-file
     writeCsv(datafile, thisTrial)
     for i in range(delayFrames):
         if i == 0:
             txtOnScreen.setText('+')
             txtOnScreen.draw()
         win.flip()
-        #Handling blocks
+    #iF there is a next trial store it
     if trials.getFutureTrial():
         nextTrial = trials.getFutureTrial(n=1) 
+     #If next trial is not the same as the current new instructions for the new task is printed....
     if nextTrial['Task'] != thisTrial['Task']:
         if nextTrial['Task'] == 'Attention':instructions=ainstruk
         else:instructions=instruk
@@ -330,7 +359,7 @@ for thisTrial in trials:
        event.waitKeys(maxWait=5)
 
 print trialClock.getTime()/60
-#Spara
+#Data's (psychopys) way of saving data files. For each subject. Not nice...
 trials.saveAsExcel(fileName=filename, # ...or an xlsx file (which supports sheets)
                   sheetName = 'rawData',
                   stimOut=['Trial', 'Block', 'Startlvl', 'Vib'], 
