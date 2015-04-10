@@ -7,6 +7,7 @@ import os, numpy, random
 
 #Functions
 def txtStim(win, text, pos, name, height):
+    ''''Saving a few lines of code. Creating text stimuli'''
     return visual.TextStim(win=win, ori=0, name=name,
     text=text,    font='Arial',
     pos=pos, height=height, wrapWidth=None,
@@ -16,7 +17,6 @@ def txtStim(win, text, pos, name, height):
 def handleKeys(key):
     '''Function for handling keys from the handles and using with
     ratingScale...'''
-    
     if key != 191:
         key = str(key)
         event._onPygletKey(symbol=key, modifiers=None, emulated=True)#Buffers the input
@@ -36,11 +36,8 @@ else: print 'User Cancelled'
 
 #Soundlevels to choose from...
 sndlvls = numpy.linspace(0.1, 1.0, 21)
-
-
 #List of sound levels to start from
 sint = [0.1, 1.0]
-
 #List of vibration intensities
 vlvl = [5,10,15]
 #List of the tasks
@@ -74,39 +71,43 @@ port = parallel.ParallelPort(address=0x1120) #For output
 inp = parallel.ParallelPort(address=0x1121) #For input from handles, gulmarkerade = 63, svartmarkerade = 255
 
 #Instructions
-instruk = u"""Uppgiften är att matcha ljudintensiteten (volymen) i ett ljud med intensiteten hos vibrationer. Detta kommer du göra 12 gånger
+instruk = u"""Din uppgift är att matcha intensiteten (volymen) i ett ljud med intensiteten hos vibrationer. Detta kommer du göra 12 gånger
  för varje ljud- och vibrationskombination. 
 Du ska ställa in ljudets volym så att du upplever att ljudintensiteten  matchar vibrationens intensitet. \n\n
 Till exempel, om du tycker att ljudets volym ska vara högre justerar du det så att volymem blir högre (genom att trycka på knappen på handtaget i din högra hand). \n
-Ta handtagen i dina h\u00E4nder,\n
-Tryck p\u00E5 en knapp p\u00E5 n\u00E5got av handtagen för att starta uppgiften"""
+Ta handtagen i dina händer,\n
+Tryck på en knapp på något av handtagen för att starta uppgiften"""
 
 ainstruk = u'''Uppgiften är att matcha ljudvolymen så att du upplever att ljudet fångar din uppmärksamheten lika mycket som vibrationen. Detta kommer du göra 12 gånger för varje ljud- och vibrations kombination.
 Du ska ställa in ljudets volym så att du upplever att det fångar din uppmärksamhet i samma grad som vibrationen.
 Ta handtagen i dina händer.\n
 Tryck på en knapp på något av handtagen för att starta uppgiften'''
 
-avsl = u"Nu \u00E4r experimentet klart. Tack f\u00F6r ditt deltagande!"
+avsl = uu'''Nu är experimentet klart. Tack för ditt deltagande!'''
+#Instructions attention capture dimension
 instruk1 = u'''Ställ in ljudet så att du upplever att det fångar din uppmärksamhet i samma grad som vibrationen. \n\nTryck på knappen på det vänstra handtaget för att sänka volymen, tryck på knappen på det högra handtaget för att höja volymen.\nTryck enter för att svara.'''
+#Intensity instructions
 instruk2 = u'''Ställ in ljudet så att du upplever att det har samma intensitet som vibrationen.  \n\n
 Tryck på knappen på det vänstra handtaget för att sänka volymen, tryck på knappen på det högra handtaget för att höja volymen.\nTryck enter för att svara.'''
+#Create some textobjects
 txtOnScreen = txtStim(win, text='+', pos=[0.0,0.0], height= 0.05, name=u'Text Object on Screen')
 txtOntrial = txtStim(win, text=instruk2, pos=[0.0,0.3], height= 0.05, name=u'Trial')
-
 myItem = visual.TextStim(win, text=None, pos=[0.0,0.8], name=u'Trial Text')
+
 #Practice image
 pracTarget =  imStim(win=win, image='image1.png', pos=[0.0,0.0], name='TargetPractice')
 practiceTxt = u'''Du kommer nu få göra en övningsuppgift: matcha ljudintensiteten (volymen) i ett ljud med intensiteten i bilder som visas på skärmen. Detta kommer du göra 6 gånger för varje ljud- och bildkombination. 
 Du ska ställa in ljudets volym så att du upplever att ljudintensiteten  matchar bildens intensitet. \n\n
 Till exempel, om du tycker att bildens intensitet är större än ljudet så ökar du ljudets intensitet genom att trycka på höger knapp. Tycker du intensiteten hos bilden är lägre trycker du på den vänstra knappen.\n
 Tryck på någon knapp på handtagen för att starta övningsuppgiften'''
+
 myPrac = visual.TextStim(win, text=instruk2, pos=[0.0,0.5], height= 0.05, name=u'Trial Text')
+
 #Durations
 vibFrames = int(expInfo['frameRate'] * 0.2)
 delayFrames = int(expInfo['frameRate'] * 1.0)
 
 event.clearEvents()
-
 
 trialClock.reset()
 
@@ -114,7 +115,7 @@ trialClock.reset()
 #First a square design is done with the function. We have 3 conditions (cCount = 3!)
 squares= lsquare(cCount=3) 
 
-#Not sure if used?
+#Order balanced according to latin square (se above)
 order = blockOrder(skv=squares, nParticipants=42, participant=int(expInfo['FP']))
 
 #Practice handling
@@ -175,7 +176,7 @@ while pracnotClicked:
 txtOnScreen.setText('+')
 txtOnScreen.draw()
 win.flip()
-last_state = False #Buttons not pressed
+last_state = False #Reset button press...
 
 #Just a clock to time stuff... 
 timingClock = core.Clock()
@@ -188,7 +189,7 @@ for thisTrial in practice:
     #Creating sound object
     tada = sound.Sound(snd)
     #Changing text to be on screen
-    tx = u"St\u00E4ll in ljudintensitet: " + str(thisTrial['Trial']) 
+    tx = u"Ställ in ljudintensitet: " + str(thisTrial['Trial']) 
     #Setting the image stored in the dictionary thisTrial (which is in trials, created by trialhandler...)
     pracTarget.setImage(thisTrial['Visual'])
     myItem.setText(tx)
@@ -222,7 +223,7 @@ for thisTrial in practice:
         if myRatingScale.getRating()==21: fv = sndlvls[20]
         else: fv = sndlvls[myRatingScale.getRating()]
      
-        if isinstance(fv, float): #Kan vara Ã¶verflÃ¶digt
+        if isinstance(fv, float): 
             tada.setVolume(fv)   
         else:
             tada.setVolume(fv)
