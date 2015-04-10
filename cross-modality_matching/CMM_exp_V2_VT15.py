@@ -26,7 +26,7 @@ def handleKeys(key):
 
 # Store info about the experiment session
 expName = u'Cross-Modality Matching'   #
-expInfo = {'Subject Id (#)':'', 'Age':'', 'ExpVersion': 1.0,'Sex': ['Male', 'Female']}
+expInfo = {'Subject Id (#)':'', 'Age':'', 'ExpVersion': 2.0,'Sex': ['Male', 'Female']}
 expInfo[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")  # add a simple timestamp
 infoDlg = gui.DlgFromDict(dictionary=expInfo, title=expName, fixed=['ExpVersion'])
 
@@ -51,7 +51,6 @@ trialClock = core.Clock()
 
 #Counterbalancing which hand vibrations will start... 
 if fpn%2==0:
-    sint.reverse()
     task.reverse()
 
 #Making data dir using my function
@@ -161,7 +160,7 @@ trials = data.TrialHandler(stimList,1, method="sequential")
 trials.data.addDataType('Volume')
 trials.data.addDataType('Response')
 
-#Instruktions text practice
+#Instructions text practice
 pracnotClicked = True
 while pracnotClicked:  
     hInp = inp.readData()
@@ -318,7 +317,7 @@ for thisTrial in trials:
     #Collect the responses from the rating scale... 
     thisTrial['Response'] = rating
     #Which volume was played?
-    thisTrial['Volym'] = fv    
+    thisTrial['Volume'] = fv    
     #Save trial to row in csv-file
     writeCsv(datafile, thisTrial)
     for i in range(delayFrames):
@@ -353,6 +352,6 @@ print trialClock.getTime()/60
 trials.saveAsExcel(fileName=filename, # ...or an xlsx file (which supports sheets)
                   sheetName = 'rawData',
                   stimOut=['Trial', 'Block', 'Startlvl', 'Vib'], 
-                  dataOut=['Level_raw', 'Volym_raw'], appendFile=False)
+                  dataOut=['all_raw'], appendFile=False)
 win.close()
 core.quit()
