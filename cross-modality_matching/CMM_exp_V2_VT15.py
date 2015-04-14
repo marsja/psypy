@@ -47,7 +47,7 @@ snd = 'novel.wav'
 
 #Sub_id. 50 % start in the lower end of sound level..
 fpn = int(expInfo['Subject_Id'])
-trialClock = core.Clock()
+expClock = core.Clock()
 
 #Counterbalancing which hand vibrations will start... 
 if fpn%2==0:
@@ -109,7 +109,7 @@ delayFrames = int(expInfo['frameRate'] * 1.0)
 
 event.clearEvents()
 
-trialClock.reset()
+expClock.reset()
 
 targ = 0
 stimList=[]
@@ -161,6 +161,8 @@ trials = data.TrialHandler(stimList,1, method="sequential")
 #Adding stuff to that...
 trials.data.addDataType('Volume')
 trials.data.addDataType('Response')
+trials.data.addDataType('TrialTime')
+
 
 #Instructions text practice
 pracnotClicked = True
@@ -178,6 +180,7 @@ last_state = False #Reset button press...
 
 #Just a clock to time stuff... 
 timingClock = core.Clock()
+trialClock = core.Clock()
 for thisTrial in practice:
     #So where on the ratingScale used are the ticker gonna start?
     mStart = numpy.argmax(sndlvls==thisTrial['Startlvl'])
@@ -254,6 +257,8 @@ win.flip()
 
 #The test part of the experiment starts hear...
 for thisTrial in trials:
+    #Reset the clock
+    trialClock.reset()
     #Where is it gonna be started (the ticker...)
     mStart = numpy.argmax(sndlvls==thisTrial['Startlvl']) 
     if  thisTrial['Task'] == 'Attention': scrinstruc = instruk1
@@ -311,15 +316,16 @@ for thisTrial in trials:
         if t>1.6:
             #Yes reset the clock....
             timingClock.reset()
-
         win.flip()
-            
+
         rating = myRatingScale.getRating() # get the value indicated by the subject, 'None' if skipped
     port.setData(0)
     #Collect the responses from the rating scale... 
     thisTrial['Response'] = rating
     #Which volume was played?
     thisTrial['Volume'] = fv    
+    #How long did it take?
+    thisTrial['TrialTime'] =  trialClock.getTime()
     #Save trial to row in csv-file
     writeCsv(datafile, thisTrial)
     for i in range(delayFrames):
@@ -349,9 +355,9 @@ for thisTrial in trials:
        event.clearEvents()
        event.waitKeys(maxWait=5)
 
-print trialClock.getTime()/60
+print expClock.getTime()/60
 #Writing a file with each partipants time to complete the task;
-timeDic = {'Sub_id':fpn,'ExpTime':trialClock.getTime()/60}
+timeDic = {'Sub_id':fpn,'ExpTime':expClock.getTime()/60}
 writeCsv(timefile, timeDic)
 
 win.close()
