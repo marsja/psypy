@@ -26,7 +26,7 @@ def handleKeys(key):
 
 # Store info about the experiment session
 expName = u'Cross-Modality Matching'   #
-expInfo = {'Subject Id (#)':'', 'Age':'', 'ExpVersion': 2.0,'Sex': ['Male', 'Female']}
+expInfo = {'Subject_Id':'', 'Age':'', 'ExpVersion': 2.0,'Sex': ['Male', 'Female']}
 expInfo[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")  # add a simple timestamp
 infoDlg = gui.DlgFromDict(dictionary=expInfo, title=expName, fixed=['ExpVersion'])
 
@@ -39,15 +39,15 @@ sndlvls = numpy.linspace(0.1, 1.0, 21)
 #List of sound levels to start from
 sint = [0.1, 1.0]
 #List of vibration intensities
-vlvl = [5,5,5,5,5,5,10,10,10,10,10,10,15,15,15,15,15,15]
+vlvl = [5,5,5,5,10,10,10,10,15,15,15,15]
 #List of the tasks
 task = ['Attention', 'Attention', 'Attention', 'Intensity', 'Intensity', 'Intensity']
 #Sound
 snd = 'novel.wav'
 
 #Sub_id. 50 % start in the lower end of sound level..
-fpn = int(expInfo['FP'])
-trialClock = core.Clock()
+fpn = int(expInfo['Subject_Id'])
+expClock = core.Clock()
 
 #Counterbalancing which hand vibrations will start... 
 if fpn%2==0:
@@ -56,8 +56,9 @@ if fpn%2==0:
 #Making data dir using my function
 makeDir('Data')
 makeDir('Data\\Subject_files')
-filename = u'Data\\Subject_files' + os.path.sep + u'Data_%s_%s' %(expInfo[u'FP'], expInfo[u'date'])
-datafile = u'Data' + os.path.sep + u'CM_-_Matching_snd_vs_vib_intensity.csv'
+filename = u'Data\\Subject_files' + os.path.sep + u'Data_%s_%s' %(expInfo[u'Subject_Id'], expInfo[u'date'])
+datafile = u'Data' + os.path.sep + u'CM_-_Matching_snd_n_vib.csv'
+timefile = u'Data' + os.path.sep + u'timeittook.csv'
 
 #Creates window for the experiment
 win = visual.Window(size=(1920, 1200), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
@@ -82,7 +83,7 @@ Du ska ställa in ljudets volym så att du upplever att det fångar din uppmärk
 Ta handtagen i dina händer.\n
 Tryck på en knapp på något av handtagen för att starta uppgiften'''
 
-avsl = uu'''Nu är experimentet klart. Tack för ditt deltagande!'''
+avsl = u'''Nu är experimentet klart. Tack för ditt deltagande!'''
 #Instructions attention capture dimension
 instruk1 = u'''Ställ in ljudet så att du upplever att det fångar din uppmärksamhet i samma grad som vibrationen. \n\nTryck på knappen på det vänstra handtaget för att sänka volymen, tryck på knappen på det högra handtaget för att höja volymen.\nTryck enter för att svara.'''
 #Intensity instructions
@@ -108,7 +109,7 @@ delayFrames = int(expInfo['frameRate'] * 1.0)
 
 event.clearEvents()
 
-trialClock.reset()
+expClock.reset()
 
 targ = 0
 stimList=[]
@@ -137,7 +138,8 @@ for i in range(0,6):
     #Randomize the vibrations
     random.shuffle(vlvl)
     #Each block containts 12 trials
-    for trial in range(1,13):
+    for trial in range(0,12):
+        
         #Random number to choose soundstart level from;
         idx = random.randint(0,20)
         expTrial += 1
@@ -145,12 +147,12 @@ for i in range(0,6):
         if trial <= 6:
             #Creating a list containing dictionaries. Each dictionary is a trial. 
             stimList.append( 
-                {'Startlvl':sndlvls[idx], 'Trial':trial, 'Block':block,'Vib':vlvl[trial], 'VibOrder':order, 'Task':task[i], 'ExpTrial':expTrial,
+                {'Startlvl':sndlvls[idx], 'Trial':trial, 'Block':block,'Vib':vlvl[trial], 'Task':task[i], 'ExpTrial':expTrial,
                 'Sub_id':fpn, 'Age':expInfo['Age'], 'Sex':expInfo['Sex'], 'Date':expInfo['date']} )
          #The other half start from the other end...
         else: 
             stimList.append( 
-                {'Startlvl':sndlvls[idx], 'Trial':trial, 'Block':block, 'Vib':vlvl[trial],'VibOrder':order, 'Task':task[i], 'ExpTrial':expTrial,
+                {'Startlvl':sndlvls[idx], 'Trial':trial, 'Block':block, 'Vib':vlvl[trial], 'Task':task[i], 'ExpTrial':expTrial,
                 'Sub_id':fpn, 'Age':expInfo['Age'], 'Sex':expInfo['Sex'], 'Date':expInfo['date']} )
 
 
@@ -159,6 +161,8 @@ trials = data.TrialHandler(stimList,1, method="sequential")
 #Adding stuff to that...
 trials.data.addDataType('Volume')
 trials.data.addDataType('Response')
+trials.data.addDataType('TrialTime')
+
 
 #Instructions text practice
 pracnotClicked = True
@@ -176,6 +180,7 @@ last_state = False #Reset button press...
 
 #Just a clock to time stuff... 
 timingClock = core.Clock()
+trialClock = core.Clock()
 for thisTrial in practice:
     #So where on the ratingScale used are the ticker gonna start?
     mStart = numpy.argmax(sndlvls==thisTrial['Startlvl'])
@@ -252,8 +257,10 @@ win.flip()
 
 #The test part of the experiment starts hear...
 for thisTrial in trials:
+    #Reset the clock
+    trialClock.reset()
     #Where is it gonna be started (the ticker...)
-    mStart = numpy.argmax(sndlvls==thisTrial['Startlvl']) +1
+    mStart = numpy.argmax(sndlvls==thisTrial['Startlvl']) 
     if  thisTrial['Task'] == 'Attention': scrinstruc = instruk1
     else: 
         scrinstruc = instruk2
@@ -268,8 +275,8 @@ for thisTrial in trials:
         txtOnScreen.draw()
         win.flip()
         if i == 0:
-            if mStart == 21: tada.setVolume(sndlvls[20])
-            else: tada.setVolume(sndlvls[mStart])
+            tada.setVolume(sndlvls[mStart])
+            port.setData(vb)
             tada.play()
         if i == vibFrames-1:
             port.setData(0)
@@ -309,15 +316,16 @@ for thisTrial in trials:
         if t>1.6:
             #Yes reset the clock....
             timingClock.reset()
-
         win.flip()
-            
+
         rating = myRatingScale.getRating() # get the value indicated by the subject, 'None' if skipped
     port.setData(0)
     #Collect the responses from the rating scale... 
     thisTrial['Response'] = rating
     #Which volume was played?
     thisTrial['Volume'] = fv    
+    #How long did it take?
+    thisTrial['TrialTime'] =  trialClock.getTime()
     #Save trial to row in csv-file
     writeCsv(datafile, thisTrial)
     for i in range(delayFrames):
@@ -347,11 +355,10 @@ for thisTrial in trials:
        event.clearEvents()
        event.waitKeys(maxWait=5)
 
-print trialClock.getTime()/60
-#Data's (psychopys) way of saving data files. For each subject. Not nice...
-trials.saveAsExcel(fileName=filename, # ...or an xlsx file (which supports sheets)
-                  sheetName = 'rawData',
-                  stimOut=['Trial', 'Block', 'Startlvl', 'Vib'], 
-                  dataOut=['all_raw'], appendFile=False)
+print expClock.getTime()/60
+#Writing a file with each partipants time to complete the task;
+timeDic = {'Sub_id':fpn,'ExpTime':expClock.getTime()/60}
+writeCsv(timefile, timeDic)
+
 win.close()
 core.quit()
