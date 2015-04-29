@@ -1,0 +1,12 @@
+Welcome to the Sustained Attention to Response Task.
+
+In this a visual mask will be presented in the middle of the screen, this mask will be replaced by a digit,
+
+Your task is press the space button when you see a digit. However, when you see  the digit 3 you should withold your response,
+
+That is, you should answer as fast as you can on any digit except for the digit 3 - then whithold your response,
+
+PRESS ANY KEY TO BEGIN THE TASK
+
+
+
