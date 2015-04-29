@@ -102,13 +102,13 @@ class Exp():
                 if digit == 3: 
                     if self.expinfo['Task'] == 'SART':
                         self.correctresp = u'Noresponse'
-                    elif self.expinfo['Task'] == 'Vigalance':
+                    elif self.expinfo['Task'] == 'Vigilance':
                         self.correctresp = u'space'
                         
                 else:
                     if self.expinfo['Task'] == 'SART':
                         self.correctresp = u'space'
-                    elif self.expinfo['Task'] == 'Vigalance':
+                    elif self.expinfo['Task'] == 'Vigilance':
                         self.correctresp = u'Noresponse'
                         
                 self.trialList.append({'Cresp':self.correctresp, 
@@ -127,9 +127,11 @@ class Exp():
         import os
         from psychopy import data, gui
         self.expName = u'Sustained attention'   
-        self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.1,'Sex': ['Male', 'Female'], 'Task':['SART', 'Vigalance']}
+        self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.1,
+                        'Sex': ['Male', 'Female'], 'Task':['SART', 'Vigilance']}
         self.expInfo[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")  
-        self.infoDlg = gui.DlgFromDict(dictionary=self.expInfo, title=self.expName, fixed=['ExpVersion'])
+        self.infoDlg = gui.DlgFromDict(dictionary=self.expInfo, 
+                                       title=self.expName, fixed=['ExpVersion'])
         self.datafile = u'Data' + os.path.sep + u'_SART.csv'
         if self.infoDlg.OK:
             return self.expInfo
@@ -221,7 +223,10 @@ class preLoading():
             fileList = []
             for curExtension in self.ext:
                 print self.whichFiles
-                fileList.extend(glob.glob(os.path.join(self.path,self.directory,self.whichFiles+curExtension)))
+                fileList.extend(glob.glob(
+                                        os.path.join(self.path,
+                                                       self.directory,
+                                                       self.whichFiles+curExtension)))
         else:
             fileList = glob.glob(os.path.join(self.path,directory,self.whichFiles+self.extension))
             fileMatrix = {} #initialize fileMatrix  as a dict because it'll be accessed by picture names, cound names, whatver
