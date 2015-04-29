@@ -1,0 +1,15 @@
+Welcome to the Vigilance Task.
+
+In this a visual mask will be presented in the middle of the screen,
+this mask will be replaced by a digit,
+
+Your task is press the space button when you see the digit 3,
+When you see any other digit than the digit 3 you should withold your response,
+
+That is, you should answer as fast as you can when you see the digit 3
+but withold your response on any other digit,
+
+PRESS ANY KEY TO BEGIN THE TASK
+
+
+
