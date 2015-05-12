@@ -1,20 +1,21 @@
-'''
-Sustained Attention To Response task
-Robertson et al., (1997)
-#25 digits (25 pairs of 9 digits)
-Each digit is presented for 250 Msec followed by a 900 Msec mask (Mask= ring with diaognoal cross in the middle, diameter=29mm). 
 
-Digit 3 is no response digit, prefixed quasi-randomly distributed among 225 trials
-
-Digit onset-to-onset 1150 ms
-
-Vigilance task (modified SART):Only respond on digit 3 (withold on all other digits)
-'''
 class Exp():
-    '''The general class for the complete application to run the experiment(s)
     '''
-    def __init__(self, digits, nTrials):
+    Sustained Attention To Response task
+    Robertson et al., (1997)
+    x digits (x pairs of x digits)
+    Each digit is presented for 250 Msec followed by a 900 Msec mask (Mask= ring with diaognoal cross in the middle, diameter=29mm). 
+    
+    Digit 3 is no response digit, prefixed quasi-randomly distributed among x trials
+    
+    Digit onset-to-onset 1150 ms
+    
+    Vigilance task (modified SART):Only respond on digit 3 (withold on all other digits)
+    '''
+    
+    def __init__(self, digits, nTrials, name):
         #Should look this over and probably change it
+        self.name = name
         self.nDigits = digits
         self.digits = range(1,digits+1)
         self.trials = nTrials
@@ -33,11 +34,13 @@ class Exp():
     def expWin(self, color):
         '''For creating the experiment window
         in preferred color
+        self.color = color
         '''
         from psychopy import visual
 
         self.color = color
-        self.win = visual.Window(size=(1920, 1200), fullscr=True, screen=0, allowGUI=False, allowStencil=False,
+        self.win = visual.Window(size=(1920, 1200), fullscr=True, screen=0, 
+                                 allowGUI=False, allowStencil=False,
             monitor=u'testMonitor', color=self.color, colorSpace=u'rgb',
             blendMode=u'avg',winType=u'pyglet')     
         return self.win
@@ -61,19 +64,6 @@ class Exp():
             pos=self.pos, height=self.height,
             color=self.color, colorSpace=u'rgb') 
             
-    def imStim(self, win, imgFile, pos, name):
-        '''Creates an image object'''
-        self.imgFile = imgFile
-        self.pos = pos
-        self.name = name
-        self.image = visual.ImageStim(win=win, name=self.name,
-            image=self.imgFile, mask=None,
-            ori=0, pos=self.pos,
-            colorSpace=u'rgb', opacity=1,
-            flipHoriz=False, flipVert=False,
-            texRes=128, interpolate=True, depth=-5.0)
-        return self.image
-        
     def presStim(self, stim, target):
         self.stim = stim
         self.target = target
@@ -95,9 +85,9 @@ class Exp():
         self.trials = trialList
         self.trialList = []
         self.correctresp = 'space'
-        trial = 0
+
         for trialSeq in trialList:
-            for digit in trialSeq:
+            for trial, digit in enumerate(trialSeq):#Here i could use enumerate(trial, trialSeq)
                 trial +=1
                 if digit == 3: 
                     if self.expinfo['Task'] == 'SART':
@@ -192,7 +182,7 @@ class Exp():
         self.mask = self.files['circleMask'][0]
         self.textOnScreen = self.txtStim(self.win, text=None,
                                          pos=[0.0,0.0], name='Visual Target',
-                                         height=0.06, color='White')
+                                         height=0.07, color='White')
         self.txtfiles[self.expinfo['Task']].draw()
         self.win.flip()
         event.waitKeys()
@@ -217,7 +207,6 @@ class preLoading():
         self.wi = win
         self.whichFiles = whichFiles
         self.stimList=stimList
-        print self.dir, self.extension,self.fileType, self.whichFiles
          
         if isinstance(self.extension,list):
             fileList = []
@@ -256,10 +245,9 @@ class preLoading():
 
         #check 
         if stimList and set(fileMatrix.keys()).intersection(stimList) != set(stimList):
-            #print stimList, fileMatrix.keys(),set(stimList).difference(fileMatrix.keys())
             popupError(str(set(self.stimList).difference(fileMatrix.keys())) + " does not exist in " + self.path+'\\'+directory)
          
         return fileMatrix
         
-test = Exp(digits=9, nTrials=225)
+test = Exp(digits=9, nTrials=225, name="Sustained Attention")
 test.runExp()
