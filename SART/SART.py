@@ -1,16 +1,32 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Jun 27 22:05:30 2015
+Sustained Attention to Response Task & Vigalance Task
+
+@author: erik @ marsja dot se
+"""
+
+from psychopy import visual, core, data, sound, gui, event
+import glob, os
+
+from random import shuffle
 
 class Exp():
     '''
-    Sustained Attention To Response task
+    Two tasks;
+    
+    1)Sustained Attention To Response task
     Robertson et al., (1997)
     x digits (x pairs of x digits)
-    Each digit is presented for 250 Msec followed by a 900 Msec mask (Mask= ring with diaognoal cross in the middle, diameter=29mm). 
+    Each digit is presented for 250 Msec followed by a 900 Msec mask 
+    (Mask= ring with diaognoal cross in the middle, diameter=29mm). 
     
     Digit 3 is no response digit, prefixed quasi-randomly distributed among x trials
     
     Digit onset-to-onset 1150 ms
     
-    Vigilance task (modified SART):Only respond on digit 3 (withold on all other digits)
+    2)Vigilance task (modified SART)
+    Same as above but responses on digit 3 only (withold on all other digits)
     '''
     
     def __init__(self, digits, nTrials, name):
@@ -23,7 +39,6 @@ class Exp():
     def trialList(self):
         '''Creates a list of trials.
         '''
-        from random import shuffle
         self.trialList = []
         for trialSeq in range(self.trials/self.nDigits):
             self.shuffled = self.digits[:]
@@ -36,8 +51,6 @@ class Exp():
         in preferred color
         self.color = color
         '''
-        from psychopy import visual
-
         self.color = color
         self.win = visual.Window(size=(1920, 1200), fullscr=True, screen=0, 
                                  allowGUI=False, allowStencil=False,
@@ -53,34 +66,33 @@ class Exp():
         self.height = height
         self.color = color'''
         
-        from psychopy import visual, core
         self.text = text
         self.pos = pos
         self.name = name
         self.height = height
         self.color = color
-        return visual.TextStim(win=self.win, ori=0, name=self.name,
+        textStim = visual.TextStim(win=self.win, ori=0, name=self.name,
             text=self.text,    font=u'Arial',
             pos=self.pos, height=self.height,
             color=self.color, colorSpace=u'rgb') 
+        return textStim   
             
     def presStim(self, stim, target):
         self.stim = stim
         self.target = target
-        
+        self.win.flip()  
         if self.stim == "text":
-            self.textOnScreen.text = self.target
+            self.textOnScreen.setText(target)
             self.textOnScreen.draw()
-        if self.stim == "image":
+        elif self.stim == "image":
             self.target.draw()
-        self.win.flip()
         if self.stim == "sound":
-            from psychopy import sound
-            '''here we will we play the sound'''
+            '''here we will we play the sound
+            NOT IMPLEMENTED YET
+            '''
             self.target.play()
             
     def expTrials(self, trialList, expinfo):
-        from psychopy import data
         self.exp = expinfo
         self.trials = trialList
         self.trialList = []
@@ -117,27 +129,27 @@ class Exp():
         import os
         from psychopy import data, gui
         self.expName = u'Sustained attention'   
-        self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.1,
+        self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.2,
                         'Sex': ['Male', 'Female'], 'Task':['SART', 'Vigilance']}
         self.expInfo[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")  
         self.infoDlg = gui.DlgFromDict(dictionary=self.expInfo, 
                                        title=self.expName, fixed=['ExpVersion'])
-        self.datafile = u'Data' + os.path.sep + u'_SART.csv'
+        self.datafile = u'Data' + os.path.sep + u'DATA_SART.csv'
         if self.infoDlg.OK:
             return self.expInfo
         else: 
             return 'Cancelled'
             
     def runTrials(self, trialObj):
-        from psychopy import core, event
         self.trialhandler = trialObj
         self.timer = core.Clock()
-        self.targetFrames = int(self.frameR * .2)
+        self.targetFrames = int(self.frameR * .25)
         self.itiFrames = int(self.frameR * .9)
         for trial in self.trialhandler:
             self.timer.reset()
             for frame in range(self.targetFrames):
-                    self.presStim('text', trial['Stimulus'])
+                    visualTarget = trial['Stimulus']
+                    self.presStim('text', visualTarget)
             for frame in range(self.itiFrames):
                     self.presStim('image', self.mask)
                     keys = event.getKeys(keyList=['space'])
@@ -147,6 +159,7 @@ class Exp():
                             trial['Accuracy'] = 1
                         else: 
                             trial['Accuracy'] = 0
+            
             trial['RT'] = self.timer.getTime()                
             trial['Accuracy'] = 0
             self.writeCsv(self.datafile, trial)
@@ -167,7 +180,6 @@ class Exp():
             os.makedirs(dirname)
 
     def runExp(self):
-        from psychopy import event, core
         self.makeDir('Data')
         self.expinfo = self.expInfo()
         if self.expinfo == 'Cancelled':
@@ -180,7 +192,7 @@ class Exp():
         self.files = self.load.loadFiles("Stimuli", "png", "image", self.win)
         self.txtfiles = self.load.loadFiles("Stimuli", "txt", "text", self.win)
         self.mask = self.files['circleMask'][0]
-        self.textOnScreen = self.txtStim(self.win, text=None,
+        self.textOnScreen = self.txtStim(self.win, text='',
                                          pos=[0.0,0.0], name='Visual Target',
                                          height=0.07, color='White')
         self.txtfiles[self.expinfo['Task']].draw()
@@ -195,12 +207,10 @@ class Exp():
 class preLoading():
     
     def __init__(self):
-        import os
         self.path = os.getcwd()
 
     def loadFiles(self, directory,extension,fileType,win='',whichFiles='*',stimList=[]):
         """ Load all the pics and sounds"""
-        import glob, os
         self.dir = directory
         self.extension = extension
         self.fileType = fileType
