@@ -126,8 +126,6 @@ class Exp():
         self.trialHandler.data.addDataType('RT')                          
         
     def expInfo(self):
-        import os
-        from psychopy import data, gui
         self.expName = u'Sustained attention'   
         self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.2,
                         'Sex': ['Male', 'Female'], 'Task':['SART', 'Vigilance']}
