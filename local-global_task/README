@@ -2,10 +2,10 @@ Local-Global Task
 
 Adaptation of the local-global task of Miyake et al., (2000).
 At least as I have interpreted it from the sparse description in the paper.
-Here the keyboard is used to respond.
+In my version the keyboard is used to respond.
 
 
-As for now 40 practice trials and 96 test trials are run. Each visual target is presented for 500 ms. (as far as I can see, there is no information regarding target duration in the paper). After response there is a 500 ms. response-to-stimulus interval.
+The task consists of 40 practice trials and 96 test trials are run. Note that in current version the test trials start 500 ms. after last practice trial.  Each visual target is presented for 500 ms. (as far as I can see, there is no information regarding target duration in the paper). After response there is a 500 ms. response-to-stimulus interval.
 
 Tha task is to respond to targets (i.e., q for a circle, w for an X, a for a triangle, and s for a square). If the figure is blue participants are to respond to the global figure. In the example below press 'a' (triangle).
                              
@@ -17,6 +17,7 @@ Tha task is to respond to targets (i.e., q for a circle, w for an X, a for a tri
 If the target is black participants are to respond to the local fiugre. In the example above press 'q' (circle) .
 
 50 % of each trials are switch trials meaning that it requires a switch of mental set.  This quasi-randomization is done for each participant in contrast to prerandomized as in the paper.
+
 
 References
 
