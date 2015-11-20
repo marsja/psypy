@@ -33,11 +33,9 @@ the example above press 'q' (circle) .
 mental set.  This quasi-randomization is done for each participant in
  contrast to prerandomized as in the paper.
 """
-
-from psychopy import visual, event ,core,data,gui, sound
-import os, glob, csv, re
+from psychopy import visual, event ,core,data,gui
+import os, re
 from fileHandling import *
-from random import randint
 from collections import Counter
 
 class Window():
@@ -51,7 +49,7 @@ class Window():
         self.color = color
         '''
         self.color = color
-        self.win = visual.Window(size=(840, 840), fullscr=False, screen=0, 
+        self.win = visual.Window(size=(1080, 1080), fullscr=False, screen=0, 
                                  allowGUI=False, allowStencil=False,
             monitor=u'testMonitor', color=self.color, colorSpace=u'rgb',
             blendMode=u'avg',winType=u'pyglet')     
@@ -91,6 +89,7 @@ class Task():
         stims = []
         countOfStim = dict((el,0) for el in stimList)
         count = {'ns':0,'s':0}
+        returnList = []
         for i in range(ntrials):
             shuffle(stimList)
             for idx in range(len(stimList)):
@@ -123,20 +122,26 @@ class Task():
         #Frequency of the trialtypes
         freq = Counter(trialTypes).values()
         if freq[0] == freq[1] and sum(freq) == ntrials:
-            return stims
+            returnList.append(stims)
+            returnList.append(trialTypes)
+            return returnList
         elif freq[0] != nEachtype and freq[1] !=nEachtype or sum(freq) !=ntrials:
             return self.createTrialList(stimList, ntrials)
-
     
-    def CreateExpTrials(self, trialList, expinfo, files, practice=False):
+    def CreateExpTrials(self, trialsAndTypes, expinfo, files, practice=False):
         '''
         Creates the experimental trials
+        uses PsychoPy's trialhandler
+        trialsAndTypes is a list containing 2 lists. First is a list of strings
+        for the Targets. Second is a list of TrialTypes
+        expinfo contains the info of the experiment to be saved,
+        files is the object with the images
         '''
+        trialTypes = trialsAndTypes[1]
         self.exp = expinfo
-        trials = trialList
+        trials = trialsAndTypes[0]
         trialList = []
-        #1 = 
-        listOfResps = ['q','w','a', 's']
+        listOfResps = ['q','w','e', 'r']
         if practice:
                 expTask = "Practice"
         else:
@@ -145,7 +150,7 @@ class Task():
         for trial, target in enumerate(trials):#Here i could use enumerate(trial, trialSeq)
             parts = re.findall(r"[^\W_']+", target)
             if parts[0] == "Blue":
-                TrialType = 'Global'
+                taskType = 'Global'
                 if parts[1] == "Circle":
                     self.correctResp = listOfResps[0]
                 elif parts[1] == "X":
@@ -154,9 +159,8 @@ class Task():
                     self.correctResp = listOfResps[2]
                 elif parts[1] == "Rect":
                     self.correctResp = listOfResps[3]
-
             elif parts[0] == "Black":
-                TrialType = 'Local'
+                taskType = 'Local'
                 if parts[2] == "Circle":
                     self.correctResp = listOfResps[0]
                 elif parts[2] == "X":
@@ -173,8 +177,9 @@ class Task():
                                    u'Sub_id':self.exp['Subject Id'],
                                      u'Age':self.exp['Age'], 
                                      u'Sex':self.exp['Sex'], 
-                                        u'TrialType':TrialType, 
+                                        u'TaskType':taskType, 
                                         u'Task':expTask,
+                                        u'TrialType':trialTypes[trial],
                                      u'Date':self.exp['date']})
         trialHandler = data.TrialHandler(trialList,1, method="sequential")  
         trialHandler.data.addDataType('Response')
@@ -244,7 +249,7 @@ class Task():
         win.flip()
         event.waitKeys()
         event.clearEvents()
-        core.wait(1)
+        core.wait(.2)
 
 def main():
     winz = Window()
@@ -264,10 +269,15 @@ def main():
     pracHand = task.CreateExpTrials(pracList, info, files,  practice=True)
     task.runTrials(pracHand, frameR, win, info['DataFile'], load)
     core.wait(.5)
+    txtfile['exptask'].draw()
+    task.instructions(win)
     #Experimental Trials
     stimList = task.createTrialList(keyList, 96)
     trialhand =  task.CreateExpTrials(stimList, info, files)
     task.runTrials(trialhand, frameR, win, info['DataFile'], load)
+    core.wait(.5)
+    txtfile['thanks'].draw()
+    task.instructions(win)
     core.quit()
 if __name__ == "__main__":
     main()        
