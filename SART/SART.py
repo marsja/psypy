@@ -11,7 +11,7 @@ import glob, os
 
 from random import shuffle
 
-class Exp():
+class Experiment():
     '''
     Two tasks;
     
@@ -36,70 +36,67 @@ class Exp():
         self.digits = range(1,digits+1)
         self.trials = nTrials
  
-    def trialList(self):
+    def createTrials(self):
         '''Creates a list of trials.
         '''
-        self.trialList = []
-        for trialSeq in range(self.trials/self.nDigits):
-            self.shuffled = self.digits[:]
-            shuffle(self.shuffled)
-            self.trialList.append(self.shuffled)
-        return self.trialList
+        trials = []
+        for trialSequence in range(self.trials/self.nDigits):
+            shuffled = self.digits[:]
+            shuffle(shuffled)
+            trials.append(shuffled)
+        return trials
         
-    def expWin(self, color):
+    def experimentWindow(self, color):
         '''For creating the experiment window
         in preferred color
         self.color = color
         '''
-        self.color = color
         self.win = visual.Window(size=(1920, 1200), fullscr=True, screen=0, 
                                  allowGUI=False, allowStencil=False,
-            monitor=u'testMonitor', color=self.color, colorSpace=u'rgb',
+            monitor=u'testMonitor', color=color, colorSpace=u'rgb',
             blendMode=u'avg',winType=u'pyglet')     
         return self.win
 
-    def txtStim(self, win, text, pos, name, height, color):
-        '''Creates a text stimulus,
+    def createTextStimulus(self, win, text, pos, name, height, color):
+        '''Creates  text stimulu1,
         self.text = text
         self.pos = pos
         self.name = name
         self.height = height
         self.color = color'''
-        
         self.text = text
         self.pos = pos
         self.name = name
         self.height = height
         self.color = color
-        textStim = visual.TextStim(win=self.win, ori=0, name=self.name,
+        textStimulus = visual.TextStim(win=self.win, ori=0, name=self.name,
             text=self.text,    font=u'Arial',
             pos=self.pos, height=self.height,
             color=self.color, colorSpace=u'rgb') 
-        return textStim   
+        return textStimulus   
             
-    def presStim(self, stim, target):
-        self.stim = stim
+    def presentStimulus(self, stim, target):
+        self.stimulus = stim
         self.target = target
         self.win.flip()  
-        if self.stim == "text":
+        if self.stimulus == "text":
             self.textOnScreen.setText(target)
             self.textOnScreen.draw()
-        elif self.stim == "image":
+        elif self.stimulus == "image":
             self.target.draw()
-        if self.stim == "sound":
+        elif self.stimulus == "sound":
             '''here we will we play the sound
             NOT IMPLEMENTED YET
             '''
             self.target.play()
             
-    def expTrials(self, trialList, expinfo):
+    def experimentTrials(self, trials, expinfo):
         self.exp = expinfo
-        self.trials = trialList
         self.trialList = []
         self.correctresp = 'space'
 
-        for trialSeq in trialList:
-            for trial, digit in enumerate(trialSeq):#Here i could use enumerate(trial, trialSeq)
+        for trialSequence in trials:
+            for trial, digit in enumerate(trialSequence):
                 trial +=1
                 if digit == 3: 
                     if self.expinfo['Task'] == 'SART':
@@ -123,9 +120,10 @@ class Exp():
         self.trialHandler = data.TrialHandler(self.trialList,1, method="sequential")  
         self.trialHandler.data.addDataType('Response')
         self.trialHandler.data.addDataType('Accuracy')
-        self.trialHandler.data.addDataType('RT')                          
+        self.trialHandler.data.addDataType('RT')
+        return self.trialHandler                      
         
-    def expInfo(self):
+    def experimentInfo(self):
         self.expName = u'Sustained attention'   
         self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.2,
                         'Sex': ['Male', 'Female'], 'Task':['SART', 'Vigilance']}
@@ -147,9 +145,9 @@ class Exp():
             self.timer.reset()
             for frame in range(self.targetFrames):
                     visualTarget = trial['Stimulus']
-                    self.presStim('text', visualTarget)
+                    self.presentStimulus('text', visualTarget)
             for frame in range(self.itiFrames):
-                    self.presStim('image', self.mask)
+                    self.presentStimulus('image', self.mask)
                     keys = event.getKeys(keyList=['space'])
                     if keys:  
                         trial['RT'] = self.timer.getTime()
@@ -177,29 +175,29 @@ class Exp():
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
 
-    def runExp(self):
+    def runExperiment(self):
         self.makeDir('Data')
-        self.expinfo = self.expInfo()
+        self.expinfo = self.experimentInfo()
         if self.expinfo == 'Cancelled':
             print 'User cancelled'
             core.quit()
         
-        self.win = self.expWin(color = 'black')
+        self.win = self.experimentWindow(color = 'black')
         self.frameR = self.win.getActualFrameRate()
         self.load = preLoading()
         self.files = self.load.loadFiles("Stimuli", "png", "image", self.win)
         self.txtfiles = self.load.loadFiles("Stimuli", "txt", "text", self.win)
         self.mask = self.files['circleMask'][0]
-        self.textOnScreen = self.txtStim(self.win, text='',
+        self.textOnScreen = self.createTextStimulus(self.win, text='',
                                          pos=[0.0,0.0], name='Visual Target',
                                          height=0.07, color='White')
         self.txtfiles[self.expinfo['Task']].draw()
         self.win.flip()
         event.waitKeys()
         event.clearEvents()
-        self.trials = self.trialList()
-        self.expTrials(self.trials, self.expinfo)
-        self.runTrials(self.trialHandler )
+        self.trials = self.createTrials()
+        trialsToRun = self.experimentTrials(self.trials, self.expinfo)
+        self.runTrials(trialsToRun)
         core.quit()
 
 class preLoading():
@@ -256,6 +254,9 @@ class preLoading():
             popupError(str(set(self.stimList).difference(fileMatrix.keys())) + " does not exist in " + self.path+'\\'+directory)
          
         return fileMatrix
-        
-test = Exp(digits=9, nTrials=225, name="Sustained Attention")
-test.runExp()
+def main():        
+    test = Experiment(digits=9, nTrials=225, name="Sustained Attention")
+    test.runExperiment()
+    
+if __name__ == "__main__":
+    main()        
