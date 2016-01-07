@@ -33,17 +33,19 @@ the example above press 'q' (circle) .
 mental set.  This quasi-randomization is done for each participant in
  contrast to prerandomized as in the paper.
 """
-from psychopy import visual, event ,core,data,gui
 import os, re
-from fileHandling import *
 from collections import Counter
+from random import shuffle
+
+from psychopy import visual, event ,core,data,gui
+from fileHandling import *
 
 class Window():
     
     def __init__(self, name = "Local-Global Task"):
         self.name = name
         
-    def expWin(self, color):
+    def create_window(self, color):
         '''For creating the experiment window
         in preferred color
         self.color = color
@@ -55,17 +57,17 @@ class Window():
             blendMode=u'avg',winType=u'pyglet')     
         return self.win
         
-    def expInfo(self, expName = "SET EXPERIMENT NAME"):
+    def get_subj_information(self, expName = "SET EXPERIMENT NAME"):
         self.expName = expName   
-        self.expInfo = {'Subject Id':'', 'Age':'', 'Experiment Version': 0.1,
-                        'Sex': ['Male', 'Female', 'Other']}
-        self.expInfo[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")  
-        self.infoDlg = gui.DlgFromDict(dictionary=self.expInfo, 
+        self.subj_information = {'Subject Id':'', 'Age':'', 
+                'Experiment Version': 0.1, 'Sex': ['Male', 'Female', 'Other']}
+        self.subj_information[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")  
+        self.infoDlg = gui.DlgFromDict(dictionary=self.subj_information, 
                                        title=self.expName,
                                        fixed=['Experiment Version'])
-        self.expInfo[u'DataFile'] = u'Data' + os.path.sep + u'DATA_Local-Global_Task.csv'
+        self.subj_information[u'DataFile'] = u'Data' + os.path.sep + u'DATA_Local-Global_Task.csv'
         if self.infoDlg.OK:
-            return self.expInfo
+            return self.subj_information
         else: 
             return 'Cancelled'
             
@@ -74,7 +76,7 @@ class Task():
         self.xTrials = nExpTrials
         self.pTrials = nPracTrials
 
-    def createTrialList(self,listostim, ntrials):
+    def randomize_targets(self,listostim, ntrials):
         '''
         Will randomize 50 % of shifting trials
         based on that each filename (of the images) starts with Black or Blue-.
@@ -126,9 +128,9 @@ class Task():
             returnList.append(trialTypes)
             return returnList
         elif freq[0] != nEachtype and freq[1] !=nEachtype or sum(freq) !=ntrials:
-            return self.createTrialList(stimList, ntrials)
+            return self.randomize_targets(stimList, ntrials)
     
-    def CreateExpTrials(self, trialsAndTypes, expinfo, files, practice=False):
+    def create_trials(self, trialsAndTypes, expinfo, files, practice=False):
         '''
         Creates the experimental trials
         uses PsychoPy's trialhandler
@@ -187,7 +189,7 @@ class Task():
         trialHandler.data.addDataType('RT')  
         return trialHandler
     
-    def runTrials(self, trialObj, frameR, win, datafile,load):
+    def run_trials(self, trialObj, frameR, win, datafile,load):
         frameR = frameR
         trialhandler = trialObj
         self.win = win
@@ -198,9 +200,9 @@ class Task():
             self.timer.reset()
             for frame in range(self.targetFrames):
                     visualTarget = trial['Stimulus']
-                    self.presStim('image', visualTarget)
+                    self.present_stimulus('image', visualTarget)
 
-            self.presStim('text', '+')
+            self.present_stimulus('text', '+')
             keys = event.waitKeys(keyList=['q','w','a', 's'])
             if keys:  
                 trial['RT'] = self.timer.getTime()
@@ -212,9 +214,9 @@ class Task():
                 trial['RT'] = self.timer.getTime()
                 load.writeCsv(fileName=datafile, thisTrial=trial)
             for frame in range(self.itiFrames):
-                self.presStim('text', '+')
+                self.present_stimulus('text', '+')
 
-    def txtStim(self, win, text, pos, name, height, color):
+    def create_text_stimuli(self, win, text, pos, name, height, color):
         '''Creates a text stimulus,
         self.text = text
         self.pos = pos
@@ -233,11 +235,11 @@ class Task():
             color=self.color, colorSpace=u'rgb') 
         return textStim           
     
-    def presStim(self, stim, target):
+    def present_stimulus(self, stim, target):
         self.stim = stim
         self.target = target
         self.win.flip()  
-        textOnScreen = self.txtStim(self.win, text='',
+        textOnScreen = self.create_text_stimuli(self.win, text='',
                                      pos=[0.0,0.0], name='Visual Target',
                                      height=0.07, color='Black')
         if self.stim == "text":
@@ -253,11 +255,11 @@ class Task():
 
 def main():
     winz = Window()
-    info = winz.expInfo(expName = "Local-Global Task")
+    info = winz.get_subj_information(expName = "Local-Global Task")
     load = fileHandling()
     load.makeDir('Data')
     task = Task(96,40)
-    win = winz.expWin(color="white")
+    win = winz.create_window(color="white")
     frameR = win.getActualFrameRate()
     files = load.loadFiles('stimuli', '.png', 'image', win)
     keyList = [key for key in files]
@@ -265,16 +267,16 @@ def main():
     txtfile['instruk'].draw()
     task.instructions(win)
     #Practice Trials
-    pracList = task.createTrialList(keyList, 40)
-    pracHand = task.CreateExpTrials(pracList, info, files,  practice=True)
-    task.runTrials(pracHand, frameR, win, info['DataFile'], load)
+    pracList = task.randomize_targets(keyList, 40)
+    pracHand = task.create_trials(pracList, info, files,  practice=True)
+    task.run_trials(pracHand, frameR, win, info['DataFile'], load)
     core.wait(.5)
     txtfile['exptask'].draw()
     task.instructions(win)
     #Experimental Trials
-    stimList = task.createTrialList(keyList, 96)
-    trialhand =  task.CreateExpTrials(stimList, info, files)
-    task.runTrials(trialhand, frameR, win, info['DataFile'], load)
+    stimList = task.randomize_targets(keyList, 96)
+    trialhand =  task.create_trials(stimList, info, files)
+    task.run_trials(trialhand, frameR, win, info['DataFile'], load)
     core.wait(.5)
     txtfile['thanks'].draw()
     task.instructions(win)
