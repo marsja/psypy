@@ -102,16 +102,12 @@ def genTrials(nTrials):
     digits = range(0,10)
     digits.pop(idx)
     retList = [shuffleACopy(digits) for x in range(nTrials)]
-#    f = open('trials.txt', 'a')#Might change one per block?
-#    for i in range(nTrials):
-#        #print retList[i]
-#        f.write(str(retList[i]) +'\n')
-#    f.close()
+
     return retList
     
 
 def genProbes(trials):
-    '''Each probe need to be equally much randomized'''
+    '''Each position need to be equally probed'''
     from random import randint as rand
     numberOfprobes = len(trials)/8 #To get how many probes/serial position
     

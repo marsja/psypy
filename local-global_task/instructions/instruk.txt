@@ -1,0 +1,26 @@
+Välkommen till local/global task
+
+I denna uppgift kommer geometriska figurer visas på skärmen.
+
+Dessa figurer består av mindre figurer. Till exempel, en triangel bestående av cirklar;
+
+	O
+       O O
+      O   O 
+     O O O O
+
+Beroende på färg på linjerna av de mindre figurerna (blå eller svart) så ska du svara hur många
+streck som figuren består av. Är färgen blå svarar du för hur många streck figuren som de små figurerna utgör består av. I exemplet ovan består den av 3 (en triangel).
+Är färgen svart svarar du hur många streck de mindre figurerna har. I exemplet ovan består dom av 1 streck (en cirkel är ett streck draget). 
+
+För 1 streck trycker du på tangenten "q",
+För 2 streck trycker du på tangenten "w",
+för 3 streck trycker du på tangenten "a"
+För 4 streck trycker du på tangenten "s"
+
+Svara så fort du kan men även så rätt du kan.
+
+TRYCK PÅ NÅGON KNAPP FÖR ATT STARTA UPPGIFTEN.
+
+
+

@@ -6,7 +6,7 @@
 #Import psychopy stuff
 from psychopy import visual, event, core, logging, sound, gui, data
 from psychopy.constants import * 
-from psychopy import parallel as pp
+#from psychopy import parallel as pp
 
 #Python imports...
 import time, os, re, random, glob
@@ -25,7 +25,7 @@ def loadFiles(directory,extension,fileType,win='',whichFiles='*',stimList=[]):
             fileList.extend(glob.glob(os.path.join(path,directory,whichFiles+curExtension)))
     else:
         fileList = glob.glob(os.path.join(path,directory,whichFiles+extension))
-        fileMatrix = {} #initialize fileMatrix  as a dict because it'll be accessed by picture names, cound names, whatver
+        fileMatrix = {} #initialize fileMatrix  as a dict because it'll be accessed by picture names, sound names, whatver
     for num,curFile in enumerate(fileList):
         fullPath = curFile
         fullFileName = os.path.basename(fullPath)
@@ -42,9 +42,7 @@ def loadFiles(directory,extension,fileType,win='',whichFiles='*',stimList=[]):
         popupError(str(set(stimList).difference(fileMatrix.keys())) + " does not exist in " + path+'\\'+directory) 
     return fileMatrix
 
-    if stimList and set(fileMatrix.keys()).intersection(stimList) != set(stimList):
-        popupError(str(set(stimList).difference(fileMatrix.keys())) + u" does not exist in " + path+u'\\'+directory) 
-    return fileMatrix
+    
 def dispResp():
     """Display probe """
     #Variables for handling "press the digit twice"...
@@ -106,7 +104,7 @@ def makeDir(dirname):
         os.makedirs(dirname)  # if this fails (e.g. permissions) we will get error
 
 #Parallell output port (we will not have any input in this experiment)
-port = pp.ParallelPort(address=0x1120) 
+#port = pp.ParallelPort(address=0x1120) 
 
 # Store info about the experiment session
 expName = u'Serial Recall - Probe Task'  #
@@ -200,6 +198,7 @@ for block in range(3):
         condition = 'Changing-state'
     for line in trialList:
         targetList=[]
+        print line 
         for i in range(len(line)):
             index = line[i]
             sr = vtargets[str(index)]
