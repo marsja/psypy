@@ -1,0 +1,2 @@
+RT;Task;Date;Stimulus;Age;Sub_id;Sex;Trial;TrialType;File;TaskType;Cresp;Response;Accuracy
+3.407352924346924;Practice;2015-11-29_17:28;<psychopy.visual.simpleimage.SimpleImageStim instance at 0x7fd68d846fc8>;2;1;Male;1;No-Shifting;Black-Rect_Triangle.png;Local;e;q;0
