@@ -14,50 +14,50 @@ from random import shuffle
 class Experiment():
     '''
     Two tasks;
-    
+
     1)Sustained Attention To Response task
     Robertson et al., (1997)
     x digits (x pairs of x digits)
-    Each digit is presented for 250 Msec followed by a 900 Msec mask 
-    (Mask= ring with diaognoal cross in the middle, diameter=29mm). 
-    
+    Each digit is presented for 250 Msec followed by a 900 Msec mask
+    (Mask= ring with diaognoal cross in the middle, diameter=29mm).
+
     Digit 3 is no response digit, prefixed quasi-randomly distributed among x trials
-    
+
     Digit onset-to-onset 1150 ms
-    
+
     2)Vigilance task (modified SART)
     Same as above but responses on digit 3 only (withold on all other digits)
     '''
-    
+
     def __init__(self, digits, nTrials, name):
         #Should look this over and probably change it
         self.name = name
-        self.nDigits = digits
-        self.digits = range(1,digits+1)
+        self.n_digits = digits
+        self.digits = range(1, digits+1)
         self.trials = nTrials
- 
-    def createTrials(self):
+
+    def create_trials(self):
         '''Creates a list of trials.
         '''
         trials = []
-        for trialSequence in range(self.trials/self.nDigits):
+        for trial_seq in range(self.trials/self.n_digits):
             shuffled = self.digits[:]
             shuffle(shuffled)
             trials.append(shuffled)
         return trials
-        
-    def experimentWindow(self, color):
+
+    def experiment_window(self, color):
         '''For creating the experiment window
         in preferred color
         self.color = color
         '''
-        self.win = visual.Window(size=(1920, 1200), fullscr=True, screen=0, 
+        self.win = visual.Window(size=(1920, 1200), fullscr=True, screen=0,
                                  allowGUI=False, allowStencil=False,
             monitor=u'testMonitor', color=color, colorSpace=u'rgb',
-            blendMode=u'avg',winType=u'pyglet')     
+            blendMode=u'avg',winType=u'pyglet')
         return self.win
 
-    def createTextStimulus(self, win, text, pos, name, height, color):
+    def create_text_stim(self, win, text, pos, name, height, color):
         '''Creates  text stimulu1,
         self.text = text
         self.pos = pos
@@ -69,19 +69,19 @@ class Experiment():
         self.name = name
         self.height = height
         self.color = color
-        textStimulus = visual.TextStim(win=self.win, ori=0, name=self.name,
+        text_stimulus = visual.TextStim(win=self.win, ori=0, name=self.name,
             text=self.text,    font=u'Arial',
             pos=self.pos, height=self.height,
-            color=self.color, colorSpace=u'rgb') 
-        return textStimulus   
-            
-    def presentStimulus(self, stim, target):
+            color=self.color, colorSpace=u'rgb')
+        return text_stimulus
+
+    def present_stim(self, stim, target):
         self.stimulus = stim
         self.target = target
-        self.win.flip()  
+        self.win.flip()
         if self.stimulus == "text":
-            self.textOnScreen.setText(target)
-            self.textOnScreen.draw()
+            self.text_on_screen.setText(target)
+            self.text_on_screen.draw()
         elif self.stimulus == "image":
             self.target.draw()
         elif self.stimulus == "sound":
@@ -89,174 +89,196 @@ class Experiment():
             NOT IMPLEMENTED YET
             '''
             self.target.play()
-            
-    def experimentTrials(self, trials, expinfo):
+
+    def experiment_trials(self, trials, expinfo):
         self.exp = expinfo
         self.trialList = []
         self.correctresp = 'space'
 
-        for trialSequence in trials:
-            for trial, digit in enumerate(trialSequence):
+        for trial_seq in trials:
+            for trial, digit in enumerate(trial_seq):
                 trial +=1
-                if digit == 3: 
+                if digit == 3:
                     if self.expinfo['Task'] == 'SART':
                         self.correctresp = u'Noresponse'
                     elif self.expinfo['Task'] == 'Vigilance':
                         self.correctresp = u'space'
-                        
+
                 else:
                     if self.expinfo['Task'] == 'SART':
                         self.correctresp = u'space'
                     elif self.expinfo['Task'] == 'Vigilance':
                         self.correctresp = u'Noresponse'
-                        
-                self.trialList.append({'Cresp':self.correctresp, 
+
+                self.trialList.append({'Cresp':self.correctresp,
                                        u'Stimulus':digit, u'Trial':trial,
                                        u'Sub_id':self.exp['Subject Id'],
-                                         u'Age':self.exp['Age'], 
-                                         u'Sex':self.exp['Sex'], 
-                                         u'Date':self.exp['date'], 
+                                         u'Age':self.exp['Age'],
+                                         u'Sex':self.exp['Sex'],
+                                         u'Date':self.exp['date'],
                                          u'Task':self.expinfo['Task']})
-        self.trialHandler = data.TrialHandler(self.trialList,1, method="sequential")  
+        self.trialHandler = data.TrialHandler(self.trialList,1, method="sequential")
         self.trialHandler.data.addDataType('Response')
         self.trialHandler.data.addDataType('Accuracy')
         self.trialHandler.data.addDataType('RT')
-        return self.trialHandler                      
-        
-    def experimentInfo(self):
-        self.expName = u'Sustained attention'   
-        self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.2,
+        return self.trialHandler
+
+    def experiment_info(self):
+        self.exp_name = u'Sustained Attention'
+        self.exp_info = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.4,
                         'Sex': ['Male', 'Female'], 'Task':['SART', 'Vigilance']}
-        self.expInfo[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")  
-        self.infoDlg = gui.DlgFromDict(dictionary=self.expInfo, 
-                                       title=self.expName, fixed=['ExpVersion'])
+        self.exp_info[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")
+        self.infoDlg = gui.DlgFromDict(dictionary=self.exp_info,
+                                       title=self.exp_name, fixed=['ExpVersion'])
         self.datafile = u'Data' + os.path.sep + u'DATA_SART.csv'
         if self.infoDlg.OK:
-            return self.expInfo
-        else: 
+            return self.exp_info
+        else:
             return 'Cancelled'
-            
-    def runTrials(self, trialObj):
+
+    def run_trials(self, trialObj):
         self.trialhandler = trialObj
         self.timer = core.Clock()
-        self.targetFrames = int(self.frameR * .25)
-        self.itiFrames = int(self.frameR * .9)
+        self.warning_frames = int(self.frameR * .5)
+        self.target_frames = int(self.frameR * .25)
+        self.iti_frames = int(self.frameR * .9)
+
+        # Warning before experiment start
+        for frame in range(self.warning_frames):
+            self.present_stim('text', 'Get Ready!')
+
+        for frame in range(self.warning_frames):
+            self.present_stim('image', self.mask)
+
         for trial in self.trialhandler:
             self.timer.reset()
-            for frame in range(self.targetFrames):
+            keys = event.getKeys(keyList=['space'])
+
+            for frame in range(self.target_frames):
                     visualTarget = trial['Stimulus']
-                    self.presentStimulus('text', visualTarget)
-            for frame in range(self.itiFrames):
-                    self.presentStimulus('image', self.mask)
-                    keys = event.getKeys(keyList=['space'])
-                    if keys:  
+                    self.present_stim('text', visualTarget)
+
+            for frame in range(self.iti_frames):
+                    self.present_stim('image', self.mask)
+
+                    if keys:
                         trial['RT'] = self.timer.getTime()
-                        if keys[0] == trial['Cresp']: 
+                        if keys[0] == trial['Cresp']:
                             trial['Accuracy'] = 1
-                        else: 
+                        else:
                             trial['Accuracy'] = 0
-            
-            trial['RT'] = self.timer.getTime()                
-            trial['Accuracy'] = 0
-            self.writeCsv(self.datafile, trial)
-        
-    def writeCsv(self,fileName, thisTrial):
+
+                        trial['Response'] = keys[0]
+
+                    elif len(keys) == 0:
+                        if trial['Cresp'] == 'Noresponse':
+                            trial['Accuracy'] = 1
+                        else:
+                            trial['Accuracy'] = 0
+
+                        trial['Response'] = 'Noresponse'
+
+            trial['RT'] = self.timer.getTime()
+            self.write_csv(self.datafile, trial)
+
+    def write_csv(self,fileName, current_trial):
         import codecs, csv, os
-        fullPath = os.path.abspath(fileName)
-        if not os.path.isfile(fullPath): 
-            with codecs.open(fullPath, 'ab+', encoding='utf8') as f:
-                csv.writer(f, delimiter=';').writerow(thisTrial.keys())
-                csv.writer(f, delimiter=';').writerow(thisTrial.values())
+        fullpath = os.path.abspath(fileName)
+        if not os.path.isfile(fullpath):
+            with codecs.open(fullpath, 'ab+', encoding='utf8') as f:
+                csv.writer(f, delimiter=';').writerow(current_trial.keys())
+                csv.writer(f, delimiter=';').writerow(current_trial.values())
         else:
-            with codecs.open(fullPath, 'ab+', encoding='utf8') as f:
-                csv.writer(f, delimiter=';').writerow(thisTrial.values())
-    def makeDir(self, dirname):
+            with codecs.open(fullpath, 'ab+', encoding='utf8') as f:
+                csv.writer(f, delimiter=';').writerow(current_trial.values())
+
+    def create_dir(self, dirname):
         import os
         if not os.path.isdir(dirname):
-            os.makedirs(dirname)
+            os.create_dirs(dirname)
 
-    def runExperiment(self):
-        self.makeDir('Data')
-        self.expinfo = self.experimentInfo()
+    def run_experiment(self):
+        self.create_dir('Data')
+        self.expinfo = self.experiment_info()
         if self.expinfo == 'Cancelled':
             print 'User cancelled'
             core.quit()
-        
-        self.win = self.experimentWindow(color = 'black')
+
+        self.win = self.experiment_window(color = 'black')
         self.frameR = self.win.getActualFrameRate()
-        self.load = preLoading()
-        self.files = self.load.loadFiles("Stimuli", "png", "image", self.win)
-        self.txtfiles = self.load.loadFiles("Stimuli", "txt", "text", self.win)
+        self.load = Preloading()
+        self.files = self.load.load_files("Stimuli", "png", "image", self.win)
+        self.txtfiles = self.load.load_files("Stimuli", "txt", "text", self.win)
         self.mask = self.files['circleMask'][0]
-        self.textOnScreen = self.createTextStimulus(self.win, text='',
+        self.text_on_screen = self.create_text_stim(self.win, text='',
                                          pos=[0.0,0.0], name='Visual Target',
                                          height=0.07, color='White')
         self.txtfiles[self.expinfo['Task']].draw()
         self.win.flip()
         event.waitKeys()
         event.clearEvents()
-        self.trials = self.createTrials()
-        trialsToRun = self.experimentTrials(self.trials, self.expinfo)
-        self.runTrials(trialsToRun)
+        self.trials = self.create_trials()
+        trialsToRun = self.experiment_trials(self.trials, self.expinfo)
+        self.run_trials(trialsToRun)
         core.quit()
 
-class preLoading():
-    
+class Preloading():
+
     def __init__(self):
         self.path = os.getcwd()
 
-    def loadFiles(self, directory,extension,fileType,win='',whichFiles='*',stimList=[]):
+    def load_files(self, directory, extension, filetype, win='', which_files='*', stim_list=[]):
         """ Load all the pics and sounds"""
         self.dir = directory
         self.extension = extension
-        self.fileType = fileType
+        self.filetype = filetype
         self.wi = win
-        self.whichFiles = whichFiles
-        self.stimList=stimList
-         
-        if isinstance(self.extension,list):
-            fileList = []
-            for curExtension in self.ext:
-                print self.whichFiles
-                fileList.extend(glob.glob(
+        self.which_files = which_files
+
+        if isinstance(self.extension, list):
+            file_list = []
+            for current_ext in self.ext:
+                file_list.extend(glob.glob(
                                         os.path.join(self.path,
                                                        self.directory,
-                                                       self.whichFiles+curExtension)))
+                                                       self.which_files+current_ext)))
         else:
-            fileList = glob.glob(os.path.join(self.path,directory,self.whichFiles+self.extension))
-            fileMatrix = {} #initialize fileMatrix  as a dict because it'll be accessed by picture names, cound names, whatver
-        for num,curFile in enumerate(fileList):
-            fullPath = curFile
-            fullFileName = os.path.basename(fullPath)
-            stimFile = os.path.splitext(fullFileName)[0]
-            if fileType=="image":
+            file_list = glob.glob(os.path.join(self.path,directory, self.which_files+self.extension))
+            filematrix = {} #initialize filematrix  as a dict because it'll be accessed by picture names, cound names, whatver
+        for num,curFile in enumerate(file_list):
+            fullpath = curFile
+            fullfilename = os.path.basename(fullpath)
+            stimfile = os.path.splitext(fullfilename)[0]
+
+            if filetype == "image":
                 from psychopy import visual
                 try:
-                    surface = pygame.image.load(fullPath) #gets height/width of the image
-                    stim = visual.SimpleImageStim(win, image=fullPath)
-                    fileMatrix[stimFile] = ((stim,fullFileName,num,surface.get_width(),surface.get_height(),stimFile))
+                    surface = pygame.image.load(fullpath) #gets height/width of the image
+                    stim = visual.SimpleImageStim(win, image=fullpath)
+                    filematrix[stimfile] = ((stim,fullfilename,num,surface.get_width(),surface.get_height(),stimfile))
                 except: #no pygame, so don't store the image dims
-                    stim = visual.SimpleImageStim(win, image=fullPath)
-                    fileMatrix[stimFile] = ((stim,fullFileName,num,'','',stimFile))
-            elif fileType=="sound":
-                soundRef = sound.Sound(fullPath)
-                fileMatrix[stimFile] = ((soundRef))
-            elif fileType=='text':
+                    stim = visual.SimpleImageStim(win, image=fullpath)
+                    filematrix[stimfile] = ((stim,fullfilename,num,'','',stimfile))
+
+            elif filetype == "sound":
+                soundRef = sound.Sound(fullpath)
+                filematrix[stimfile] = ((soundRef))
+            elif filetype=='text':
                 from psychopy import visual
                 import codecs
-                with codecs.open(fullPath, 'r', encoding='utf8') as f:
+                with codecs.open(fullpath, 'r', encoding='utf8') as f:
                     textRef = visual.TextStim(win, text=f.read(), wrapWidth=1.2, alignHoriz='center', alignVert='center', height=0.06)
-                
-                fileMatrix[stimFile] = ((textRef))
 
-        #check 
-        if stimList and set(fileMatrix.keys()).intersection(stimList) != set(stimList):
-            popupError(str(set(self.stimList).difference(fileMatrix.keys())) + " does not exist in " + self.path+'\\'+directory)
-         
-        return fileMatrix
-def main():        
+                filematrix[stimfile] = ((textRef))
+
+        #check
+        if stim_list and set(filematrix.keys()).intersection(stim_list) != set(stim_list):
+            popupError(str(set(self.stim_list).difference(filematrix.keys())) + " does not exist in " + self.path+'\\'+directory)
+
+        return filematrix
+def main():
     test = Experiment(digits=9, nTrials=225, name="Sustained Attention")
-    test.runExperiment()
-    
+    test.run_experiment()
+
 if __name__ == "__main__":
-    main()        
+    main()
