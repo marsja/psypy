@@ -1,3 +1,5 @@
 *.pyc
+*.csv
 .Rhistory
 .spyderworkspace
+spatial_stm_task.py

@@ -187,7 +187,7 @@ class Experiment():
 
         if not self.frameR:
             self.frameR = 60.0
-            
+
         self.load = preLoading()
         self.files = self.load.loadFiles("Stimuli", "png", "image", self.win)
         self.txtfiles = self.load.loadFiles("Stimuli", "txt", "text", self.win)
