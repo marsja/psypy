@@ -32,21 +32,21 @@ class Experiment():
     def __init__(self, digits, nTrials, name):
         #Should look this over and probably change it
         self.name = name
-        self.n_digits = digits
-        self.digits = range(1, digits+1)
+        self.nDigits = digits
+        self.digits = range(1,digits+1)
         self.trials = nTrials
 
-    def create_trials(self):
+    def createTrials(self):
         '''Creates a list of trials.
         '''
         trials = []
-        for trial_seq in range(self.trials/self.n_digits):
+        for trialSequence in range(self.trials/self.nDigits):
             shuffled = self.digits[:]
             shuffle(shuffled)
             trials.append(shuffled)
         return trials
 
-    def experiment_window(self, color):
+    def experimentWindow(self, color):
         '''For creating the experiment window
         in preferred color
         self.color = color
@@ -57,7 +57,7 @@ class Experiment():
             blendMode=u'avg',winType=u'pyglet')
         return self.win
 
-    def create_text_stim(self, win, text, pos, name, height, color):
+    def createTextStimulus(self, win, text, pos, name, height, color):
         '''Creates  text stimulu1,
         self.text = text
         self.pos = pos
@@ -69,19 +69,19 @@ class Experiment():
         self.name = name
         self.height = height
         self.color = color
-        text_stimulus = visual.TextStim(win=self.win, ori=0, name=self.name,
+        textStimulus = visual.TextStim(win=self.win, ori=0, name=self.name,
             text=self.text,    font=u'Arial',
             pos=self.pos, height=self.height,
             color=self.color, colorSpace=u'rgb')
-        return text_stimulus
+        return textStimulus
 
-    def present_stim(self, stim, target):
+    def presentStimulus(self, stim, target):
         self.stimulus = stim
         self.target = target
         self.win.flip()
         if self.stimulus == "text":
-            self.text_on_screen.setText(target)
-            self.text_on_screen.draw()
+            self.textOnScreen.setText(target)
+            self.textOnScreen.draw()
         elif self.stimulus == "image":
             self.target.draw()
         elif self.stimulus == "sound":
@@ -90,13 +90,13 @@ class Experiment():
             '''
             self.target.play()
 
-    def experiment_trials(self, trials, expinfo):
+    def experimentTrials(self, trials, expinfo):
         self.exp = expinfo
         self.trialList = []
         self.correctresp = 'space'
 
-        for trial_seq in trials:
-            for trial, digit in enumerate(trial_seq):
+        for trialSequence in trials:
+            for trial, digit in enumerate(trialSequence):
                 trial +=1
                 if digit == 3:
                     if self.expinfo['Task'] == 'SART':
@@ -123,44 +123,32 @@ class Experiment():
         self.trialHandler.data.addDataType('RT')
         return self.trialHandler
 
-    def experiment_info(self):
-        self.exp_name = u'Sustained Attention'
-        self.exp_info = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.4,
+    def experimentInfo(self):
+        self.expName = u'Sustained attention'
+        self.expInfo = {'Subject Id':'', 'Age':'', 'ExpVersion': 0.2,
                         'Sex': ['Male', 'Female'], 'Task':['SART', 'Vigilance']}
-        self.exp_info[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")
-        self.infoDlg = gui.DlgFromDict(dictionary=self.exp_info,
-                                       title=self.exp_name, fixed=['ExpVersion'])
+        self.expInfo[u'date'] = data.getDateStr(format="%Y-%m-%d_%H:%M")
+        self.infoDlg = gui.DlgFromDict(dictionary=self.expInfo,
+                                       title=self.expName, fixed=['ExpVersion'])
         self.datafile = u'Data' + os.path.sep + u'DATA_SART.csv'
         if self.infoDlg.OK:
-            return self.exp_info
+            return self.expInfo
         else:
             return 'Cancelled'
 
-    def run_trials(self, trialObj):
+    def runTrials(self, trialObj):
         self.trialhandler = trialObj
         self.timer = core.Clock()
-        self.warning_frames = int(self.frameR * .5)
-        self.target_frames = int(self.frameR * .25)
-        self.iti_frames = int(self.frameR * .9)
-
-        # Warning before experiment start
-        for frame in range(self.warning_frames):
-            self.present_stim('text', 'Get Ready!')
-
-        for frame in range(self.warning_frames):
-            self.present_stim('image', self.mask)
-
+        self.targetFrames = int(self.frameR * .25)
+        self.itiFrames = int(self.frameR * .9)
         for trial in self.trialhandler:
             self.timer.reset()
-            keys = event.getKeys(keyList=['space'])
-
-            for frame in range(self.target_frames):
+            for frame in range(self.targetFrames):
                     visualTarget = trial['Stimulus']
-                    self.present_stim('text', visualTarget)
-
-            for frame in range(self.iti_frames):
-                    self.present_stim('image', self.mask)
-
+                    self.presentStimulus('text', visualTarget)
+            for frame in range(self.itiFrames):
+                    self.presentStimulus('image', self.mask)
+                    keys = event.getKeys(keyList=['space'])
                     if keys:
                         trial['RT'] = self.timer.getTime()
                         if keys[0] == trial['Cresp']:
@@ -168,117 +156,111 @@ class Experiment():
                         else:
                             trial['Accuracy'] = 0
 
-                        trial['Response'] = keys[0]
-
-                    elif len(keys) == 0:
-                        if trial['Cresp'] == 'Noresponse':
-                            trial['Accuracy'] = 1
-                        else:
-                            trial['Accuracy'] = 0
-
-                        trial['Response'] = 'Noresponse'
-
             trial['RT'] = self.timer.getTime()
-            self.write_csv(self.datafile, trial)
+            trial['Accuracy'] = 0
+            self.writeCsv(self.datafile, trial)
 
-    def write_csv(self,fileName, current_trial):
+    def writeCsv(self,fileName, thisTrial):
         import codecs, csv, os
-        fullpath = os.path.abspath(fileName)
-        if not os.path.isfile(fullpath):
-            with codecs.open(fullpath, 'ab+', encoding='utf8') as f:
-                csv.writer(f, delimiter=';').writerow(current_trial.keys())
-                csv.writer(f, delimiter=';').writerow(current_trial.values())
+        fullPath = os.path.abspath(fileName)
+        if not os.path.isfile(fullPath):
+            with codecs.open(fullPath, 'ab+', encoding='utf8') as f:
+                csv.writer(f, delimiter=';').writerow(thisTrial.keys())
+                csv.writer(f, delimiter=';').writerow(thisTrial.values())
         else:
-            with codecs.open(fullpath, 'ab+', encoding='utf8') as f:
-                csv.writer(f, delimiter=';').writerow(current_trial.values())
-
-    def create_dir(self, dirname):
+            with codecs.open(fullPath, 'ab+', encoding='utf8') as f:
+                csv.writer(f, delimiter=';').writerow(thisTrial.values())
+    def makeDir(self, dirname):
         import os
         if not os.path.isdir(dirname):
-            os.create_dirs(dirname)
+            os.makedirs(dirname)
 
-    def run_experiment(self):
-        self.create_dir('Data')
-        self.expinfo = self.experiment_info()
+    def runExperiment(self):
+        self.makeDir('Data')
+        self.expinfo = self.experimentInfo()
         if self.expinfo == 'Cancelled':
             print 'User cancelled'
             core.quit()
 
-        self.win = self.experiment_window(color = 'black')
+        self.win = self.experimentWindow(color = 'black')
         self.frameR = self.win.getActualFrameRate()
-        self.load = Preloading()
-        self.files = self.load.load_files("Stimuli", "png", "image", self.win)
-        self.txtfiles = self.load.load_files("Stimuli", "txt", "text", self.win)
+
+        if not self.frameR:
+            self.frameR = 60.0
+            
+        self.load = preLoading()
+        self.files = self.load.loadFiles("Stimuli", "png", "image", self.win)
+        self.txtfiles = self.load.loadFiles("Stimuli", "txt", "text", self.win)
         self.mask = self.files['circleMask'][0]
-        self.text_on_screen = self.create_text_stim(self.win, text='',
+        self.textOnScreen = self.createTextStimulus(self.win, text='',
                                          pos=[0.0,0.0], name='Visual Target',
                                          height=0.07, color='White')
         self.txtfiles[self.expinfo['Task']].draw()
         self.win.flip()
         event.waitKeys()
         event.clearEvents()
-        self.trials = self.create_trials()
-        trialsToRun = self.experiment_trials(self.trials, self.expinfo)
-        self.run_trials(trialsToRun)
+        self.trials = self.createTrials()
+        trialsToRun = self.experimentTrials(self.trials, self.expinfo)
+        self.runTrials(trialsToRun)
         core.quit()
 
-class Preloading():
+class preLoading():
 
     def __init__(self):
         self.path = os.getcwd()
 
-    def load_files(self, directory, extension, filetype, win='', which_files='*', stim_list=[]):
+    def loadFiles(self, directory,extension,fileType,win='',whichFiles='*',stimList=[]):
         """ Load all the pics and sounds"""
         self.dir = directory
         self.extension = extension
-        self.filetype = filetype
+        self.fileType = fileType
         self.wi = win
-        self.which_files = which_files
+        self.whichFiles = whichFiles
+        self.stimList=stimList
 
-        if isinstance(self.extension, list):
-            file_list = []
-            for current_ext in self.ext:
-                file_list.extend(glob.glob(
+        if isinstance(self.extension,list):
+            fileList = []
+            for curExtension in self.ext:
+                print self.whichFiles
+                fileList.extend(glob.glob(
                                         os.path.join(self.path,
                                                        self.directory,
-                                                       self.which_files+current_ext)))
+                                                       self.whichFiles+curExtension)))
         else:
-            file_list = glob.glob(os.path.join(self.path,directory, self.which_files+self.extension))
-            filematrix = {} #initialize filematrix  as a dict because it'll be accessed by picture names, cound names, whatver
-        for num,curFile in enumerate(file_list):
-            fullpath = curFile
-            fullfilename = os.path.basename(fullpath)
-            stimfile = os.path.splitext(fullfilename)[0]
-
-            if filetype == "image":
+            fileList = glob.glob(os.path.join(self.path,directory,self.whichFiles+self.extension))
+            fileMatrix = {} #initialize fileMatrix  as a dict because it'll be accessed by picture names, cound names, whatver
+        for num,curFile in enumerate(fileList):
+            fullPath = curFile
+            fullFileName = os.path.basename(fullPath)
+            stimFile = os.path.splitext(fullFileName)[0]
+            if fileType=="image":
                 from psychopy import visual
                 try:
-                    surface = pygame.image.load(fullpath) #gets height/width of the image
-                    stim = visual.SimpleImageStim(win, image=fullpath)
-                    filematrix[stimfile] = ((stim,fullfilename,num,surface.get_width(),surface.get_height(),stimfile))
+                    surface = pygame.image.load(fullPath) #gets height/width of the image
+                    stim = visual.SimpleImageStim(win, image=fullPath)
+                    fileMatrix[stimFile] = ((stim,fullFileName,num,surface.get_width(),surface.get_height(),stimFile))
                 except: #no pygame, so don't store the image dims
-                    stim = visual.SimpleImageStim(win, image=fullpath)
-                    filematrix[stimfile] = ((stim,fullfilename,num,'','',stimfile))
-
-            elif filetype == "sound":
-                soundRef = sound.Sound(fullpath)
-                filematrix[stimfile] = ((soundRef))
-            elif filetype=='text':
+                    stim = visual.SimpleImageStim(win, image=fullPath)
+                    fileMatrix[stimFile] = ((stim,fullFileName,num,'','',stimFile))
+            elif fileType=="sound":
+                soundRef = sound.Sound(fullPath)
+                fileMatrix[stimFile] = ((soundRef))
+            elif fileType=='text':
                 from psychopy import visual
                 import codecs
-                with codecs.open(fullpath, 'r', encoding='utf8') as f:
+                with codecs.open(fullPath, 'r', encoding='utf8') as f:
                     textRef = visual.TextStim(win, text=f.read(), wrapWidth=1.2, alignHoriz='center', alignVert='center', height=0.06)
 
-                filematrix[stimfile] = ((textRef))
+                fileMatrix[stimFile] = ((textRef))
 
         #check
-        if stim_list and set(filematrix.keys()).intersection(stim_list) != set(stim_list):
-            popupError(str(set(self.stim_list).difference(filematrix.keys())) + " does not exist in " + self.path+'\\'+directory)
+        if stimList and set(fileMatrix.keys()).intersection(stimList) != set(stimList):
+            popupError(str(set(self.stimList).difference(fileMatrix.keys())) + " does not exist in " + self.path+'\\'+directory)
 
-        return filematrix
+        return fileMatrix
 def main():
     test = Experiment(digits=9, nTrials=225, name="Sustained Attention")
-    test.run_experiment()
+    test.runExperiment()
 
 if __name__ == "__main__":
     main()
