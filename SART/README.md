@@ -1,4 +1,4 @@
-__Tasks are not piloted<__
+**__Tasks are not piloted**
 
 ## This a Python/Psychopy script for running the SART and the Vigilance Task
 
