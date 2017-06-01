@@ -2,6 +2,8 @@
 
 - This a Python/Psychopy script for running the SART and the Vigilance Task
 
+These tasks *may* be used but please ensure that they work properly in your environment (e.g., OS, language settings).
+
 
 
 ### References
